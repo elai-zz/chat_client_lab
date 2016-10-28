@@ -15,7 +15,6 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var signUpButton: UIButton!
     @IBOutlet weak var loginButton: UIButton!
-    let currentUser: PFUser? = nil
     
     // Sign up on click
     @IBAction func onClick(_ sender: AnyObject) {
@@ -24,7 +23,7 @@ class LoginViewController: UIViewController {
             if let error = error {
                 self.createAlert(title: "Uh oh", message: error.localizedDescription)
             } else {
-                self.createAlert(title: "Cool", message: "You signed up, now please log in.")
+                self.presentModally()
             }
         }
         
@@ -32,21 +31,29 @@ class LoginViewController: UIViewController {
     
     // login on click
     @IBAction func loginOnClick(_ sender: AnyObject) {
-        let user = getUser()
-        PFUser.logInWithUsername(inBackground: user.email!, password: user.password!) { (user: PFUser?, error: Error?) in
+        let email = emailTextField.text
+        let password = passwordTextField.text
+
+        PFUser.logInWithUsername(inBackground: email!, password: password!) { (user: PFUser?, error: Error?) in
             if let error = error {
                 self.createAlert(title: "Uh oh", message: error.localizedDescription)
             } else {
-                self.createAlert(title: "Cool", message: "You signed up, now please log in.")
+                self.presentModally()
             }
             
         }
-        
+    }
+    
+    func presentModally() {
+        let storyboard = self.storyboard
+        let chatViewController = storyboard?.instantiateViewController(withIdentifier: "chatViewController") as! ChatViewController
+        chatViewController.setUser(user: PFUser.current()!)
+        self.present(chatViewController, animated: true, completion: nil)
     }
     
     func getUser() -> PFUser {
-        if currentUser != nil {
-            return currentUser!
+        if let currentUser = PFUser.current() {
+            return currentUser
         }
         let user = PFUser()
         user.username = emailTextField.text
